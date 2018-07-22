@@ -1,3 +1,6 @@
-Yeah so this is going to be a blog. Whoopie!
-Maybe one day I'll make myself a nice theme.
-But today is not that day...
+---
+# Feel free to add content and custom Front Matter to this file.
+# To modify the layout, see https://jekyllrb.com/docs/themes/#overriding-theme-defaults
+
+layout: home
+---
