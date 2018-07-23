@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Emoji vectors and optimization. Oh my! (Part 1: Word2Vec and Python)"
-date:   2018-07-05 09:54:05+0000
+date:   2018-07-05
 ---
 
 # Emoji vectors and optimization. Oh my! (Part 1: Word2Vec and Python)
