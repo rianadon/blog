@@ -19,7 +19,7 @@ description: >- # this means to ignore newlines until "baseurl:"
 extdescription: >-
   I still need to theme this. Eventually it shall be done.
 baseurl: "/blog" # the subpath of your site, e.g. /blog
-url: "https://github.com/rianadon" # the base hostname & protocol for your site, e.g. http://example.com
+url: "rianadon.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 github_username: rianadon
 author: rianadon
 header_pages: null
