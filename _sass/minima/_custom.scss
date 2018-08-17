@@ -5,3 +5,13 @@
 @media screen and (max-width: 470px) {
     .site-title-ext { display: none; }
 }
+
+img {
+    display: block;
+    margin: 0 auto;
+}
+
+figcaption {
+    text-align: center;
+    margin-top: 8px;
+}
