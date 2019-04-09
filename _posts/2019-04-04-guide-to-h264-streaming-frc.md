@@ -33,12 +33,12 @@ So, I shall first start off with:
 
 ## What's this H.264 thing and why do you want it?
 
-MJPEG and H.264 are both video codecs. They define how to compress video. The de facto standard in FRC right now is [MJPEG](http://www.theclosedcaptioningproject.com/?p=524) (transported over HTTP). And for a pretty good reason. It's easy and fast to compress images to JPEG; you don't need very powerful hardware. Plenty of libraries exist to compress images to JPEG, and streaming the video to somewhere else simply requires sending the images immediately one after another over HTTP. You can also display the stream in browsers, dashboards, and just about anything that's not your toaster.
-
 <figure>
     <img src="{{ "/assets/2019-03-27-mjpegh264.png" | absolute_url }}" alt="Visualization of MJPEG and H.264 differences" width="740" height="296" />
     <figcaption>A well-illustrated diagram depicting the differences in encoding betweeen  MJPEG and H.264</figcaption>
 </figure>
+
+MJPEG and H.264 are both video codecs. They define how to compress video. The de facto standard in FRC right now is [MJPEG](http://www.theclosedcaptioningproject.com/?p=524) (transported over HTTP). And for a pretty good reason. It's easy and fast to compress images to JPEG; you don't need very powerful hardware. Plenty of libraries exist to compress images to JPEG, and streaming the video to somewhere else simply requires sending the images immediately one after another over HTTP. You can also display the stream in browsers, dashboards, and just about anything that's not your toaster.
 
 MJPEG compresses each frame individually, making them more [fuzzy](http://web.mit.edu/course/21/21.guide/techterm.htm) to save bandwidth. You could also call this spatial compression. H.264 also utilizes temporal compression, or compressing changes between each frame. Imagine your robot is bricked (I said imagine; I know this would never happen to you). In your camera feed you see Team 1072 scoring five points in the hatch scale boiler. How much changed in that image? Not much. An MJPEG steam would send everything visible in the feed again, including the beautiful gray carpet. An H.264 stream would send only the information necessary to locate reconstruct the 1072 bot's movement. You may imagine this would add up to lots of data savings. It does. You can fit a somewhat good-looking 320x240 video at 15 fps into 250 kilobits per second. You could stream four cameras under 1 Mbps.
 
@@ -62,12 +62,12 @@ I'd rather not go too far in depth explaining how H.264 and other modern video c
 
 Our end goal here is to take video from a camera and send it (or, if you're confident in your ability, fully send it) to another computer. The process that grabs the video, decodes it, re-encodes it, wraps it up, and ships it is called a **pipeline**. A pipeline is like a blanket statement; it accounts for and encapsulates everything going on.
 
+We have to build our pipeline somehow. Not out of wood, but out of **elements**. An element is like that well-written function every programmer desires to write one day: it performs one specific task. That could be reading from a camera, changing color spaces, encoding to H.264, or sending the stream across the network. All these are elements.
+
 <figure>
     <img src="{{ "/assets/2019-03-27-pipeline.png" | absolute_url }}" alt="A pipeline" width="500" height="216"/>
     <figcaption>A visualization of a 3-element pipeline</figcaption>
 </figure>
-
-We have to build our pipeline somehow. Not out of wood, but out of **elements**. An element is like that well-written function every programmer desires to write one day: it performs one specific task. That could be reading from a camera, changing color spaces, encoding to H.264, or sending the stream across the network. All these are elements.
 
 Elements need to be linked together. To accomplish this, each element has one or more **pads**. Data flows into an element's sink pad and out of its source pad. These names may seem reversed. Why are we sending data into the sink and out of the source? Elements that provide media (such as a file reader, `filesrc`) end with `src`. These have a single source pad. Elements to which data is sent off (`tcpserversink`) end with `sink` and have a single sink pad.
 
@@ -243,7 +243,7 @@ Repeat this step as many times as you'd like for more streams!
 
 #### 3. Compile!
 
-Save `test-launch.c`, open a terminal in the same directory, and run `make`. If the code compiles sans errors, running `./test-launch -p 5800` should start an RTSP server with two streams accessible by `rtsp://localhost:5800/test` and `rtsp://localhost:5800/fries`.
+Save `test-launch.c`, open a terminal in the same directory, and run `make`. If the code compiles without errors or glaring red text, running `./test-launch -p 5800` should start an RTSP server with two streams accessible by `rtsp://localhost:5800/test` and `rtsp://localhost:5800/fries`.
 
 
 <a id="orgc8f63da"></a>
