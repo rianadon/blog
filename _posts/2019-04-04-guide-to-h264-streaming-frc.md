@@ -7,8 +7,6 @@ image: /assets/2019-04-08-robot.png
 
 For two and a half years, I've been trying to reliably stream H.264 video from our robot to our driver station. Finally, this year, the stream worked reliably. I'm going to go into a bit of detailing how we did this. The post is structured as a tutorial, with some background theory worked in. I've tried to provide links wherever possible for further exploration.
 
-> Hold up. What's a [robot](https://www.youtube.com/watch?v=D9YGHQLJluY)? What's a [driver station](https://www.reddit.com/r/FRC/comments/9n1lgv/team_4151_drove_with_a_dance_pad_and_some_donkey/)? What [is](https://www.youtube.com/watch?v=taz7OT2rriE) [FRC](https://www.youtube.com/watch?v=X_IlmOuNZnQ)? What is even going on? If you don't know you'll fail to understand pretty much every reference here. But maybe you'll get through it.
-
 So, I shall first start off with:
 
 ## Table of Contents
