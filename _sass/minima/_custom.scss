@@ -11,8 +11,15 @@ img {
     margin: 0 auto;
 }
 
+.post-image {
+    width: 400px;
+    height: 400px;
+    max-width: 90%;
+    margin-bottom: 8px;
+}
+
 @media screen and (max-width: 800px) {
-    img { height: auto; }
+    img, .post-image { height: auto; }
 }
 
 figcaption {

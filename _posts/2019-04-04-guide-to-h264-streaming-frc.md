@@ -2,6 +2,7 @@
 layout: post
 title:  "A Guide to H.264 Streaming with Regards to FRC"
 date:   2019-04-04
+image: /assets/2019-04-08-robot.png
 ---
 
 For two and a half years, I've been trying to reliably stream H.264 video from our robot to our driver station. Finally, this year, the stream worked reliably. I'm going to go into a bit of detailing how we did this. The post is structured as a tutorial, with some background theory worked in. I've tried to provide links wherever possible for further exploration.
