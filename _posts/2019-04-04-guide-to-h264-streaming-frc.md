@@ -7,6 +7,8 @@ image: /assets/2019-04-08-robot.png
 
 For two and a half years, I've been trying to reliably stream H.264 video from our robot to our driver station. Finally, this year, the stream worked reliably. I'm going to go into a bit of detailing how we did this. The post is structured as a tutorial, with some background theory worked in. I've tried to provide links wherever possible for further exploration.
 
+> Hold up. What's a [robot](https://www.youtube.com/watch?v=D9YGHQLJluY)? What's a [driver station](https://www.reddit.com/r/FRC/comments/9n1lgv/team_4151_drove_with_a_dance_pad_and_some_donkey/)? What [is](https://www.youtube.com/watch?v=taz7OT2rriE) [FRC](https://www.youtube.com/watch?v=X_IlmOuNZnQ)? What is even going on? If you don't know you'll fail to understand pretty much every reference here. But maybe you'll get through it.
+
 So, I shall first start off with:
 
 ## Table of Contents
@@ -44,6 +46,13 @@ MJPEG compresses each frame individually, making them more [fuzzy](http://web.mi
 
 > If your robot is executing victory spins, you'll see less data saving as the scenery around will be constantly changing. However, there will still be compressible elements moving across your field of view, and in practice there are still substantial reductions in data.
 
+Since H.264 requires some more power (appropximately 10 more oomphs of cpu) to do its compression, you really want to use some external coprocessor to do your video encoding should you choose to run with this.
+
+<figure>
+    <img src="{{ "/assets/2019-04-09-stones.png" | absolute_url }}" alt="Codecs as Infinity Stones" width="467" height="180" />
+    <figcaption>With all six, we'd be able to compress the whole universe in half!</figcaption>
+</figure>
+
 I'd rather not go too far in depth explaining how H.264 and other modern video compression codecs work. There are much better guides which already do this like [this introductory one](https://sidbala.com/h-264-is-magic/) and [this more in-depth one](https://github.com/leandromoreira/digital_video_introduction#readme). These are both absolutely gorgeous and I'd recommend you read them both for educational learning and expanding your spiritual intellect. But to explain the codec, it applies to each frame the same [chroma subsampling](http://blog.biamp.com/how-chroma-subsampling-works/) JPEG uses (dividing the image into a luminosity plus two color channels then heavily compressing the latter) then divides the compressed frame into subsections called blocks. Every so often the codec sends an I-frame or Intra frame. Opposite of the Latin root *inter-* (between/among), an *intra-* (inside/within) frame describes a single frame by itself, described only by itself, not performing any motion or temporal compression. If your video consisted of only I-frames, it would be practically the same as an MJPEG stream. P-frames (predicted from the previous frame) and B-frames (bi-predicted from the previous and following frames), describe frames by the motion of the blocks in adjacent frames. Remember how we divided each compressed frame into blocks? P-frames and B-frames encode vectors describing where each of these blocks approximately moved to. If a pink flamingo suddenly appeared in only one frame, however, it would be impossible to find that flamingo in an adjacent frame and say "Hey the flamingo moved from the top left to the center." Unless your camera is mounted high it shouldn't be hallucinating. Thus, to encode for spontaneous pink flamingos among other new objects in the frame, the codec also sends the difference between the actual frame and the frame predicted by block motions. Since such difference should be small, it can be heavily compressed (with [DCT](https://www.youtube.com/watch?v=Q2aEzeMDHMA) for example) and sent very efficiently. H.264 applies some extra compression to these frames, and that's all!
 
 
@@ -53,6 +62,7 @@ I'd rather not go too far in depth explaining how H.264 and other modern video c
 
 [FFmpeg](https://www.ffmpeg.org/about.html) and [GStreamer](https://gstreamer.freedesktop.org/documentation/application-development/introduction/gstreamer.html) are possibly the two largest media frameworks. They're both open source too! Both can do streaming, but I find GStreamer more extensible.
 
+Often I find FFmpeg nicer for video conversion. If you ever save video off the robot, FFmpeg is great for transcoding it to other formats. However, I've found that in cases of video streaming, I often get too much lag and type Fs into the FFmpeg process. GStreamer, in my view, gives more transparency in how it's handling your stream.
 
 <a id="org6b32f4b"></a>
 
@@ -62,7 +72,7 @@ I'd rather not go too far in depth explaining how H.264 and other modern video c
 
 Our end goal here is to take video from a camera and send it (or, if you're confident in your ability, fully send it) to another computer. The process that grabs the video, decodes it, re-encodes it, wraps it up, and ships it is called a **pipeline**. A pipeline is like a blanket statement; it accounts for and encapsulates everything going on.
 
-We have to build our pipeline somehow. Not out of wood, but out of **elements**. An element is like that well-written function every programmer desires to write one day: it performs one specific task. That could be reading from a camera, changing color spaces, encoding to H.264, or sending the stream across the network. All these are elements.
+We have to build our pipeline somehow. Not out of wood like most FRC robots, but out of **elements**. An element is like that well-written function every programmer desires to write one day: it performs one specific task. That could be reading from a camera, changing color spaces, encoding to H.264, or sending the stream across the network. All these are elements.
 
 <figure>
     <img src="{{ "/assets/2019-03-27-pipeline.png" | absolute_url }}" alt="A pipeline" width="500" height="216"/>
