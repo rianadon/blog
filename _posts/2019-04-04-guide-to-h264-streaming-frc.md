@@ -5,7 +5,7 @@ date:   2019-04-04
 image: /assets/2019-04-08-robot.png
 ---
 
-For two and a half years, I've been trying to reliably stream H.264 video from our robot to our driver station. Finally, this year, the stream worked reliably. I'm going to go into a bit of detailing how we did this. The post is structured as a tutorial, with some background theory worked in. I've tried to provide links wherever possible for further exploration.
+For two and a half years, I've been trying to reliably stream H.264 video from our robot to our driver station. Finally, this year, the stream worked reliably. I'm going to graciously detail how we did this. The post is structured as a tutorial, with some background theory worked in. I've tried to provide links wherever possible for further exploration.
 
 So, I shall first start off with:
 
@@ -60,7 +60,7 @@ I'd rather not go too far in depth explaining how H.264 and other modern video c
 
 [FFmpeg](https://www.ffmpeg.org/about.html) and [GStreamer](https://gstreamer.freedesktop.org/documentation/application-development/introduction/gstreamer.html) are possibly the two largest media frameworks. They're both open source too! Both can do streaming, but I find GStreamer more extensible.
 
-Often I find FFmpeg nicer for video conversion. If you ever save video off the robot, FFmpeg is great for transcoding it to other formats. However, I've found that in cases of video streaming, I often get too much lag and type Fs into the FFmpeg process. GStreamer, in my view, gives more transparency in how it's handling your stream.
+Often I find FFmpeg nicer for video conversion. If you ever save video off the robot, FFmpeg is great for transcoding it to other formats. However, I've found that in cases of video streaming, I often get too much lag and type Fs into the FFmpeg process. GStreamer, in my view, gives more transparency in how it's handling your stream, which in turn allows for more easily tuning it to reduce lag.
 
 <a id="org6b32f4b"></a>
 
@@ -77,7 +77,7 @@ We have to build our pipeline somehow. Not out of wood like most FRC robots, but
     <figcaption>A visualization of a 3-element pipeline</figcaption>
 </figure>
 
-Elements need to be linked together. To accomplish this, each element has one or more **pads**. Data flows into an element's sink pad and out of its source pad. These names may seem reversed. Why are we sending data into the sink and out of the source? Elements that provide media (such as a file reader, `filesrc`) end with `src`. These have a single source pad. Elements to which data is sent off (`tcpserversink`) end with `sink` and have a single sink pad.
+Elements need to be linked together. To accomplish this, each element has one or more **pads**. Data flows into an element's sink pad and out of its source pad. These names may seem reversed. Why are we sending data into the sink and out of the source? Elements that provide media (such as a file reader, [`filesrc`](https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer-plugins/html/gstreamer-plugins-filesrc.html)) end with `src`. These have a single source pad. Elements to which data is sent off ([`tcpserversink`](https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-plugins/html/gst-plugins-base-plugins-tcpserversink.html)) end with `sink` and have a single sink pad.
 
 Pads also have data types. The tutorial above gives a great analogy:
 
@@ -85,7 +85,7 @@ Pads also have data types. The tutorial above gives a great analogy:
 
 Here we're working with software, not your grandpa's video equipment. In GStreamer, data types are specified as a MIME type (for example `video/x-h264`) with a number of options (like `width`, `height`, and `framerate`).
 
-Some elements support multiple data types to be inputted or outputted. GStreamer determines which data types should be used by a process called **caps negotiation**. Caps is short for capabilities. Each element imposes its own restrictions on caps, so the process can be seen as solving a large system of equations for the correct caps to use. Whew! This system of equations may sometimes have multiple solutions, and GStreamer might pick the right one. To recover from this doomsday fiasco, GStreamer includes a special element `capsfilter`, which allows you to enforce the type of data which flows through it. It's kind of like casting, only without parentheses.
+Some elements support multiple data types to be inputted or outputted. GStreamer determines which data types should be used by a process called **caps negotiation**. Caps is short for capabilities. Each element imposes its own restrictions on caps, so the process can be seen as solving a large system of equations for the correct caps to use. Whew! This system of equations may sometimes have multiple solutions, and GStreamer might pick the right one. To recover from this doomsday fiasco, GStreamer includes a special element [`capsfilter`](https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer-plugins/html/gstreamer-plugins-capsfilter.html), which allows you to enforce the type of data which flows through it. It's kind of like casting, only without parentheses.
 
 
 <a id="orgccf2c0a"></a>
@@ -107,7 +107,7 @@ Here's about the most basic of a pipeline you can get:
 gst-launch-1.0 videotestsrc ! videoconvert ! autovideosink
 ````
 
-`videotestsrc` outputs [SMPTE color bars](https://en.wikipedia.org/wiki/SMPTE_color_bars) to its source pad. `autovideosink` takes input from its sink pad and displays it on your screen. The data types of these two pads includes information on their color space. There may be a chance their caps (capabilities) to not account for the same color space. In this case, `videoconvert` converts between the two color spaces. It decides which color spaces to convert between as a result of caps negotiation.
+[`videotestsrc`](https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-plugins/html/gst-plugins-base-plugins-videotestsrc.html) outputs [SMPTE color bars](https://en.wikipedia.org/wiki/SMPTE_color_bars) to its source pad. [`autovideosink`](https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good-plugins/html/gst-plugins-good-plugins-autovideosink.html) takes input from its sink pad and displays it on your screen. The data types of these two pads includes information on their color space. There may be a chance their caps (capabilities) to not account for the same color space. In this case, `videoconvert` converts between the two color spaces. It decides which color spaces to convert between as a result of caps negotiation.
 
 
 <a id="orgd59e5db"></a>
@@ -123,11 +123,11 @@ gst-launch-1.0 v4l2src device=/dev/video0 name=pipe_src \
   ! udpsink name=udpsink0 host=127.0.0.1 port=5002 async=false
 ```
 
-While this worked in testing, this specific pipeline was unreliable in competition last year. It may have been because it was UDP. Perhaps it was because I wrote my own wrapper around this pipeline to determine the ip address of the driver station (which we didn't make static), and the wrapper had bugs.
+While this worked in testing, this specific pipeline was unreliable in competition last year. It may have been because it was UDP. Perhaps it was because I wrote my own wrapper around this pipeline to determine the IP address of the driver station (which we didn't make static), and the wrapper had bugs.
 
 The `video/x-h264` in the pipeline above is short for a `capsfilter`. As the camera could output a variety of framerates and frame sizes, we must enforce the size and framerate we want.
 
-The one below takes input from a normal webcam, converts it to h264, (we used some special fisheye ones but anyone which works with your laptop and doesn't require fancy drivers should work) and hands it over to an app:
+The one below takes input from a normal webcam, converts it to h264, (we used some special fisheye cameras but anyone which works with your laptop and doesn't require fancy drivers should work) and hands it over to an app:
 
 ```bash
 gst-launch-1.0 v4l2src device=/dev/video0 \
@@ -260,6 +260,44 @@ Save `test-launch.c`, open a terminal in the same directory, and run `make`. If 
 
 There's much more to the RTSP server. Examples of these other "much more"s are in the `example` folder. Perhaps you are concerned about job security and would like to password protect your stream so you are the only person on the team capable of opening it. The file `test-auth.c` has an example of how to implement authentication.
 
+
+### You said you wanted to do vision processing too?
+
+I have said nothing of OpenCV up to this point except name-dropping it in the table of contents. If you'd like to use it (or your generated GRIP code) to do target detection with the video feed you are streaming, you have three possible options:
+
+1. Fetch the stream from the RTSP server then decode it
+2. Write the stream from the RTSP server to [shared memory](https://en.wikipedia.org/wiki/Shared_memory) then access the memory via OpenCV
+3. Open the camera from OpenCV while writing to shared memory then read the memory within the RTSP server
+
+Option 1 is simply inefficient. By encoding then decoding on the same computer, you're only using extra CPU cycles, consuming more energy, which depending on where you obtain your energy from is either raising CO2 levels, milling more wind, damming more water, or stealing more light from the sun. Option 2 may work, but likely won't. The pipelines created within the RTSP server are only run when a client is connected. If no clients are connected, the pipeline is not run. This means your vision won't work unless you are connected to the RTSP server. Maybe this is how you control your AI algorithms, but option 3 is likely better. Assuming your OpenCV code doesn't frequently segfault or throw NullPointerExceptions, it will constant write new frames to shared memory, and the RTSP server will only read these when a client is connected.
+
+<figure>
+    <img src="{{ "/assets/2019-04-09-pipelinecomplicated.png" | absolute_url }}" alt="An illustration of the pipeline" width="596" height="332" />
+    <figcaption>An illustration of option 3, which you better be using</figcaption>
+</figure>
+
+In order to do this magic you're going to need OpenCV to be built with GStreamer support on whatever device you're using. Perhaps your package repositories come with said support. [Check your build options](https://www.learnopencv.com/get-opencv-build-information-getbuildinformation/) to see if such support exists. If not, install packages named something like `libgstreamer1.0-dev` and `libgstreamer-plugins-base1.0-dev` and compile OpenCV (with Python support if you want it) following instructions from one of the many great guides on the interwebs.
+
+Afterwards, believe my explanation on why option 3 is better and then implement it.
+
+To write to shared memory via OpenCV, use the [`shmsink`](https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-bad-plugins/html/gst-plugins-bad-plugins-shmsink.html) element. Rather than doing something like `VideoCapture(2)`, use:
+
+```python
+VideoCapture('v4l2src device=/dev/video2 ! '
+             'video/x-raw,width=320,height=240,framerate=15/1 ! '
+             'tee name=t ! queue ! videoconvert ! appsink drop=true '
+             't. ! queue ! shmsink socket-path=/tmp/wassup')
+````
+
+Then in your RTSP server use:
+
+```c
+gst_rtsp_media_factory_set_launch (factory, "( shmsrc socket-path=/tmp/wassup ! <INSERT CAPS HERE> ! videoconvert ! video/x-raw,format=I420 ! x264enc tune=zerolatency bitrate=250 threads=1 ! rtph264pay config-interval=1 name=pay0 pt=96 )");
+```
+
+Because GStreamer is only writing the frame contents to memory, it won't know what the format of these frames actually are when it reads them. For all it knows they could be base-64 encoded then phoenetically translated to the Russian alphabet and translated back to Pig Latin. Thus, you'll need to determine the data type (caps) GStreamer writes to the `shmsink` and specify this data type when you read the frames. Run the first pipeline using `gst-launch-1.0 -v v4l2src ...`, and you'll see the caps printed in the console. Replace `<INSERT CAPS HERE>` with the line that corresponds to the `shmsink` element, transcribed to fit the format you've been seeing here (which only entails removing the `(int)` and `(string)` strings).
+
+You can probably tell I haven't implemented any of the shared memory stuff recently. Take these instructions with a grain of salt and if they don't work or are too vague, please consider creating an issue on [my blog repository](https://github.com/rianadon/blog/issues).
 
 <a id="org98ce02a"></a>
 
@@ -489,9 +527,11 @@ while True:
         cap = makecap()
 ```
 
+You could write this code in C too, but I don't C why you would want to. Just kidding; it's a great language, but I'm just keeping this blog post concise by keeping code in one language.
+
 The code handles auto-restarting the RTSP client, so you can leave the script running in the background and let it automatically reconnect when your RTSP server comes online. Even if you don't have any processing to do to the frame, OpenCV is worth its return in automatic restarting your stream if your network fails.
 
-If you're not running any processing, you may prefer to continue using GStreamer's viewing window. In that case, you can split the video into one stream that's displayed an another which is passed to OpenCV. This as an example pipeline to accomplish this:
+If you're not running any processing, you may prefer to continue using GStreamer's viewing window. In that case, you can split the video (that's what `tee` does) into one stream that's displayed and another which is passed to OpenCV. This as an example pipeline to accomplish this:
 
 ```python
 'rtspsrc location=rtsp://10.10.72.12:5800/test latency=0 transport=tcp ! rtph264depay ! decodebin ! tee name=t ! queue ! videoconvert ! appsink sync=false drop=true t. ! queue ! videoconvert ! autovideosink'
@@ -508,6 +548,6 @@ Throughout this tutorial I've been pasting snippets of code. If you'd like to se
 
 ## A little postmortem
 
-If you closely inspected my code, you may have noticed that I name the videos I save by the current time. Most mini computers running Linux don't happen to have a real time clock on them. Firstly, this means that if your computer isn't connected to some internet source, it will report the incorrect time. That may or may not be okay with you. However, the computer we used (A Kangaroo PC) did something more egregious: at boot the time was always the same. That's right; our system loved March 6 at 4:24, even if we ran our code several weeks later. That meant video was stored to the same exact files. Luckily we used the `append=true` option, so the video concatenated itself into one terrible chunk.
+If you closely inspected my code, you may have noticed that I name the videos I save by the current time. Most mini computers running Linux don't happen to have a real time clock on them. Firstly, this means that if your computer isn't connected to some internet source, it will report the incorrect time. That may or may not be okay with you. However, the computer we used (A Kangaroo PC) did something more egregious: at boot the time was always the same. That's right; our system loved March 6 at 4:24 AM, even if we ran our code several weeks later. That meant video was stored to the same exact files. Luckily we used the `append=true` option, so the video concatenated itself into one terrible chunk.
 
-I haven't taken the time to implement such a scheme, but using strings of random characters as filenames would have been a much better option.
+I haven't taken the time to implement such a scheme, but using strings of random characters as filenames would have been a much better option. If you're blindly copying code from the gist above you may want to consider this. I'll be making such changes the morning we compete at Houston.
