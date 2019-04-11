@@ -53,6 +53,11 @@ Since H.264 requires some more power (appropximately 10 more oomphs of cpu) to d
 
 I'd rather not go too far in depth explaining how H.264 and other modern video compression codecs work. There are much better guides which already do this like [this introductory one](https://sidbala.com/h-264-is-magic/) and [this more in-depth one](https://github.com/leandromoreira/digital_video_introduction#readme). These are both absolutely gorgeous and I'd recommend you read them both for educational learning and expanding your spiritual intellect. But to explain the codec, it applies to each frame the same [chroma subsampling](http://blog.biamp.com/how-chroma-subsampling-works/) JPEG uses (dividing the image into a luminosity plus two color channels then heavily compressing the latter) then divides the compressed frame into subsections called blocks. Every so often the codec sends an I-frame or Intra frame. Opposite of the Latin root *inter-* (between/among), an *intra-* (inside/within) frame describes a single frame by itself, described only by itself, not performing any motion or temporal compression. If your video consisted of only I-frames, it would be practically the same as an MJPEG stream. P-frames (predicted from the previous frame) and B-frames (bi-predicted from the previous and following frames), describe frames by the motion of the blocks in adjacent frames. Remember how we divided each compressed frame into blocks? P-frames and B-frames encode vectors describing where each of these blocks approximately moved to. If a pink flamingo suddenly appeared in only one frame, however, it would be impossible to find that flamingo in an adjacent frame and say "Hey the flamingo moved from the top left to the center." Unless your camera is mounted high it shouldn't be hallucinating. Thus, to encode for spontaneous pink flamingos among other new objects in the frame, the codec also sends the difference between the actual frame and the frame predicted by block motions. Since such difference should be small, it can be heavily compressed (with [DCT](https://www.youtube.com/watch?v=Q2aEzeMDHMA) for example) and sent very efficiently. H.264 applies some extra compression to these frames, and that's all!
 
+### Try this!
+
+Before I get to the content, I'm going to quickly plug Team 3494's [potential-engine](https://www.chiefdelphi.com/t/potential-engine-a-simple-rtsp-server-for-frc-or-anywhere-else/348935). It's basically a plug and play implementation of what I describe in the [GStreamer RTSP Server](#org2c50ef0) section. That is, all the hard work is already done for you. You don't even need to understand what GStreamer is to use it. If you're looking to ~~stop reading~~ take a break from my writing, check out the project! And then of course keep reading.
+
+> I lied about not needing to understand GStreamer. While potential-engine handles all your RTSP server needs, GStreamer running on the driver station with the `rtspsrc` element plays streams with *significantly* less lag than FFmpeg, so it's helpful to learn and use GStreamer there until we get a dashboard that supports H.264. So as I said, [just keep reading](https://www.youtube.com/watch?v=0Hkn-LSh7es).
 
 <a id="org5821553"></a>
 
@@ -160,7 +165,6 @@ I made the lucky choice of using [RTSP](http://www.informit.com/articles/article
 -   You can have as many streams as you like controlled on a single port. So you won't chew up the limited number allotted by FIRST.
 
 You may notice I said it's a server. I think that's really cool.
-
 
 <a id="org426c3ff"></a>
 
