@@ -174,7 +174,7 @@ This thing doesn't come with GStreamer. This means you'll have to download and b
 4.  At this point you may delete the tarball
 5.  Navigate to the source directory (`cd gst-rtsp-server-1.12.3`)
 6.  Run `./configure`
-7.  Compile! Run `make -j4` (the `-j4` splits this into 4 processes to run on 4 cores, use a different number if you have a more powerful computer)
+7.  Compile! Run `make -j4` (the `-j4` splits this into 4 processes to run on 4 cores; use a different number if you have a more powerful computer)
 
 There should now be lots of little binaries in the `examples` folder!
 
@@ -298,6 +298,15 @@ gst_rtsp_media_factory_set_launch (factory, "( shmsrc socket-path=/tmp/wassup ! 
 Because GStreamer is only writing the frame contents to memory, it won't know what the format of these frames actually are when it reads them. For all it knows they could be base-64 encoded then phoenetically translated to the Russian alphabet and translated back to Pig Latin. Thus, you'll need to determine the data type (caps) GStreamer writes to the `shmsink` and specify this data type when you read the frames. Run the first pipeline using `gst-launch-1.0 -v v4l2src ...`, and you'll see the caps printed in the console. Replace `<INSERT CAPS HERE>` with the line that corresponds to the `shmsink` element, transcribed to fit the format you've been seeing here (which only entails removing the `(int)` and `(string)` strings).
 
 You can probably tell I haven't implemented any of the shared memory stuff recently. Take these instructions with a grain of salt and if they don't work or are too vague, please consider creating an issue on [my blog repository](https://github.com/rianadon/blog/issues).
+
+#### Drawing contours and debugging info
+
+If you're running vision processing on the images you're streaming, you may also be interested in adding overlays to your stream, such as the contours and bounding boxes your algorithm detects. Rather than three methods as before, there are only two ways you can accomplish this:
+
+1. Open your stream on the driver station using OpenCV (I cover the installation steps required for this later in the post). You can then use OpenCV's drawing functions and then use `imshow` to display your frames.
+2. Use a language that has GStreamer bindings. I could never get the Python ones to work on Windows (as of a year and a half ago), but Java and C both work. Use these library bindings to create a pipeline with an [`rsvgoverlay`](https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-bad-plugins/html/gst-plugins-bad-plugins-rsvgoverlay.html), then edit the element's `data` property to reflect an SVG representation of your contours.
+
+Option 1 is much easier, but may be slightly more laggy than option 2. If you'd like to embark on option 2, you could attempt to understand some [undocumented Java code](https://github.com/HarkerRobo/SillyDashboard2017/blob/master/src/CameraStream.java) I once wrote to edit an `rsvgoverlay` (check out the `createStream` method and the block on line 78). This is really the sort of thing I would write another blog post on, but writing about Java isn't my cup of tea.
 
 <a id="org98ce02a"></a>
 
