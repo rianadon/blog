@@ -22,7 +22,15 @@ img {
     img, .post-image { height: auto; }
 }
 
-figcaption {
+figure>div {
+    display: flex;
+}
+
+figure>div>img { margin: 0 4px; }
+figure>div>img:first-child { margin: 0 4px 0 0; }
+figure>div>img:last-child { margin: 0 0 0 4px; }
+
+figcaption  {
     text-align: center;
     margin-top: 8px;
 }
