@@ -52,6 +52,8 @@ craft --package kde/applications/kdeconnect-kde
 
 ## Making speedier changes
 
+> ⚠️ Some functions that required shared libraries (like loading SMS messages) do not work with this method.
+
 Craft takes a while to package changes which is not ideal, and I also don't like working in a folder 7 levels down from my home directory. So below is my super-hacky development setup:
 
 1. Clone the KDE Connect repo anywhere.
